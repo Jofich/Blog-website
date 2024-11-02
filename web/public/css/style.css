@@ -1,0 +1,45 @@
+.form{
+    display: flex;
+    flex-direction: column;
+    max-width: 300px;
+    margin: auto;
+}
+
+.registrationButton{
+    margin-bottom: 10px;
+    cursor: pointer;
+    padding: 8px;
+    font-size: 16px;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #06BFFF 0%, #afc7f8 100%); 
+    width: 200px;
+}
+
+.loginLabel{
+    margin-bottom: 10px;
+}
+
+.loginInput {
+    margin-bottom: 10px;
+    padding: 8px;
+    font-size: 16px;
+    width: 200px;
+}
+
+.error-input {
+    border: 1px solid #e63946;
+}
+
+.emailErr{
+    display: block;
+    font-size: 14px;
+    color:white;
+    letter-spacing: 0px;
+    line-height: 20px;
+    margin: 0px;
+    padding: 0px;
+    border: 0px;
+    font: inherit;
+    text-align: left;
+    letter-spacing: .3px;
+}

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация</title>
+    <link rel="stylesheet" href="static/css/style.css">
+    <script src="static/js/signup/script.js"></script>
+</head>
+<body>
+    <h1>Регистрация</h1>
+    <form class="form" id="signupForm"method="POST">
+        <input class="loginInput"type="text" placeholder="username" id="username" name="username" required>
+        <!-- <p class="emailErr">Указанный адрес электронной почты уже используется</p> -->
+        <input class="loginInput"type="email" placeholder="e-mail" id="email" name="email" required>
+        <input class="loginInput"type="password" id="password" name="password" required>
+
+        <button class="registrationButton" type="submit">Зарегистрироваться</button>
+        <p style="text-align: right">
+            Уже есть аккаунт? <a href="/login">Вход</a>
+        </p>
+    </form>
+</body>
+</html>
