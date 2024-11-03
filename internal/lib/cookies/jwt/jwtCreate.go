@@ -6,9 +6,10 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-func Create(username string) (string, error) {
+func Create(username string,id uint) (string, error) {
 	claims := models.Claims{
 		Username: username,
+		ID: id,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

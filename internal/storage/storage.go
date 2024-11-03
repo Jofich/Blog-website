@@ -2,7 +2,6 @@ package storage
 
 import (
 	"fmt"
-	"time"
 
 	hash "github.com/Jofich/Blog-website/internal/lib/hashPassword"
 	"github.com/Jofich/Blog-website/internal/models"
@@ -24,21 +23,51 @@ func (s *Storage) SaveUser(u models.User) error {
 	if err != nil {
 		return err
 	}
-	s.DB.Create(&user)
+	err = s.DB.Create(&user).Error
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (s *Storage) UserExist(u *models.User) error {
+func (s *Storage) FindUserByUsername(username string) (*models.User, error) {
+	user := new(models.User)
+	err := s.DB.Table(UserTable).Where("username = ?", username).Limit(1).Find(user).Error
+	if err != nil {
+		return &models.User{}, err
+	}
+	return user, nil
+}
 
-	now := time.Now()
+func (s *Storage) FindUserByEmail(email string) (*models.User, error) {
+	user := new(models.User)
+	err := s.DB.Table(UserTable).Where("email = ?", email).Limit(1).Find(user).Error
+	if err != nil {
+		return &models.User{}, err
+	}
+	return user, nil
+}
+
+func (s *Storage) UserExist(u *models.User) error {
+	var user *models.User
 	var err error
 	if u.Username != "" {
-		err = s.DB.Table("users").Where("username = ?", u.Username).Limit(1).Find(u).Error
+		user, err = s.FindUserByUsername(u.Username)
 	} else {
-		err = s.DB.Table("users").Where("email = ?", u.Email).Limit(1).Find(u).Error
+		user, err = s.FindUserByEmail(u.Email)
 	}
-	duration := time.Since(now)
-	fmt.Println("UserExist: ", duration.Seconds())
+	if err != nil {
+		return err
+	}
+	*u = *user
+	fmt.Println(*u)
+
+	return nil
+}
+
+func (s *Storage) SaveArtical(article models.Article) error {
+
+	err := s.DB.Table(ArticalTable).Create(&article).Error
 	if err != nil {
 		return err
 	}

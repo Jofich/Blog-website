@@ -8,6 +8,6 @@ import (
 func Logout() func(c *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		authentication.Logout(c)
-		return c.Redirect("/home", fiber.StatusMovedPermanently)
+		return c.Redirect("/feed", fiber.StatusMovedPermanently)
 	}
 }

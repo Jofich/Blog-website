@@ -13,7 +13,6 @@ import (
 
 func InitStorage(cfg config.DBCfg) storage.Storage {
 
-	
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
 		cfg.Host, cfg.Login, cfg.Password, cfg.DB_name, cfg.Port)
 
@@ -21,10 +20,12 @@ func InitStorage(cfg config.DBCfg) storage.Storage {
 	if err != nil {
 		log.Fatalf("failed to connect to the database: %v", err)
 	}
-	err = db.AutoMigrate(&models.User{})
+	err = db.AutoMigrate(&models.Category{}, &models.Article{}, &models.User{})
 	if err != nil {
 		log.Fatalln(err)
 	}
+	stor := storage.Storage{DB: db}
 
-	return storage.Storage{DB: db}
+	stor.LoadCategories()
+	return stor
 }

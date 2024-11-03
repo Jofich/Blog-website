@@ -16,11 +16,11 @@ import (
 func SignupGet(db storage.Storage) func(c *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 
-		err := auth.ValidateJWT(c)
+		_, err := auth.ValidateJWT(c)
 		if err != nil {
 			log.Println(err)
 		} else {
-			return c.Redirect("/home", fiber.StatusMovedPermanently)
+			return c.Redirect("/feed", fiber.StatusMovedPermanently)
 		}
 		err = c.SendFile("./web/view/signup/index.html")
 		if err != nil {
@@ -64,7 +64,8 @@ func Signup(db storage.Storage) func(c *fiber.Ctx) error {
 			log.Println(err)
 			return fibererr.Status(c, fiber.StatusInternalServerError, "")
 		}
-		tokenString, err := jwtToken.Create(user.Username)
+		
+		tokenString, err := jwtToken.Create(user.Username, user.ID)
 		if err != nil {
 			log.Println(err)
 			fibererr.Status(c, fiber.StatusInternalServerError, "something went wrong. try again.")
@@ -77,7 +78,7 @@ func Signup(db storage.Storage) func(c *fiber.Ctx) error {
 
 		//public/js/signup/script.js check if responce code is 301 and redirect user to "location"
 		return c.Status(fiber.StatusMovedPermanently).JSON(fiber.Map{
-			"redirect_url": "/home",
+			"redirect_url": "/feed",
 			"status":       "success",
 			"user": fiber.Map{
 				"id":         user.ID,

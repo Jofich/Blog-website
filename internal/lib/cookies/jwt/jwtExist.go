@@ -4,7 +4,8 @@ import (
 	"errors"
 
 	"github.com/Jofich/Blog-website/config"
-	"github.com/golang-jwt/jwt"
+	"github.com/Jofich/Blog-website/internal/models"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 var (
@@ -13,17 +14,17 @@ var (
 )
 
 // returns username parsed from jwt token
-func Valid(token string) error {
-	tokenParsed, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+func Valid(token string) (models.User, error) {
+	tokenParsed, err := jwt.ParseWithClaims(token, &models.Claims{}, func(token *jwt.Token) (interface{}, error) {
 		return config.JwtKey, nil
 	})
 	if err != nil {
-		return err
+		return models.User{}, err
 	}
-	if _, ok := tokenParsed.Claims.(jwt.MapClaims); ok && tokenParsed.Valid {
-		return nil
+	if claims, ok := tokenParsed.Claims.(*models.Claims); ok && tokenParsed.Valid {
+		return models.User{ID: claims.ID, Username: claims.Username}, nil
 	} else {
-		return ErrInvalidToken
+		return models.User{}, ErrInvalidToken
 	}
 
 }

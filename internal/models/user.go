@@ -6,8 +6,10 @@ import (
 
 type User struct {
 	gorm.Model
-	Username string `gorm:"unique" json:"username"`
-	Password string `json:"password"`
-	Email    string `gorm:"unique" json:"email" validate:"required,email"`
+	ID       uint   `gorm:"primarykey"`
+	Username string `json:"username" gorm:"unique;not null"`
+	Password string `json:"password" gorm:"not null"`
+	Email    string `json:"email" validate:"required,email" gorm:"unique;"`
 	Role     string
+	Articles []Article `gorm:"foreignKey:AuthorID"`
 }

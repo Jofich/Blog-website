@@ -17,11 +17,11 @@ import (
 
 func LoginGet(db storage.Storage) func(c *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		err := auth.ValidateJWT(c)
+		_, err := auth.ValidateJWT(c)
 		if err != nil {
 			log.Println(err)
 		} else {
-			return c.Redirect("/home", fiber.StatusMovedPermanently)
+			return c.Redirect("/feed", fiber.StatusMovedPermanently)
 		}
 
 		err = c.SendFile("./web/view/login/index.html")
@@ -35,16 +35,14 @@ func LoginGet(db storage.Storage) func(c *fiber.Ctx) error {
 func Login(db storage.Storage) func(c *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 
-
-
 		user := new(models.User)
+
 		err := c.BodyParser(user)
 		if err != nil {
 			log.Println(err)
-			return fibererr.Status(c,fiber.StatusBadRequest,err.Error())
+			return fibererr.Status(c, fiber.StatusBadRequest, err.Error())
 		}
 
-		
 		err = validator.IsValidUserDataLogin(*user)
 		if err != nil {
 			log.Println(err)
@@ -71,7 +69,7 @@ func Login(db storage.Storage) func(c *fiber.Ctx) error {
 			return fibererr.Status(c, fiber.StatusBadRequest, "Please verify your password and account name and try again.")
 		}
 
-		tokenString, err := jwtToken.Create(user.Username)
+		tokenString, err := jwtToken.Create(user.Username, user.ID)
 		if err != nil {
 			log.Println(err)
 			return fibererr.Status(c, fiber.StatusInternalServerError, "")
@@ -83,9 +81,9 @@ func Login(db storage.Storage) func(c *fiber.Ctx) error {
 		})
 
 		return c.Status(fiber.StatusMovedPermanently).JSON(fiber.Map{
-			"redirect_url": "/home",
-			"status": "success",
-			"message" : "Login success",
+			"redirect_url": "/feed",
+			"status":       "success",
+			"message":      "Login success",
 		})
 
 	}
