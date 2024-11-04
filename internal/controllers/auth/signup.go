@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"log"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/Jofich/Blog-website/internal/models"
 	"github.com/Jofich/Blog-website/internal/storage"
 	"github.com/gofiber/fiber/v2"
+	"gorm.io/gorm"
 )
 
 func SignupGet(db storage.Storage) func(c *fiber.Ctx) error {
@@ -36,39 +38,41 @@ func Signup(db storage.Storage) func(c *fiber.Ctx) error {
 		err := c.BodyParser(user)
 		if err != nil {
 			log.Println(err)
-			return fibererr.Status(c, fiber.StatusBadRequest, "data are incorrect")
+			return fibererr.Status(c, fiber.StatusBadRequest, ErrDataIncorrect)
 		}
 		err = validator.IsValidUserDataSignup(*user)
 		if err != nil {
 			return fibererr.Status(c, fiber.StatusBadRequest, err.Error())
 		}
-		var existUsers []models.User
-		err = db.DB.Where("email = ?", user.Email).Limit(1).Find(&existUsers).Error
+
+		_, err = db.FindUserByEmail(user.Email)
 		if err != nil {
-			log.Println(err)
-		}
-		if len(existUsers) != 0 {
-			return fibererr.Status(c, fiber.StatusConflict, "user with this mail already exists")
+			if !errors.Is(err, gorm.ErrRecordNotFound) {
+				log.Println(err)
+				fibererr.Status(c, fiber.StatusInternalServerError, ErrInternalServer)
+			}
+			fibererr.Status(c, fiber.StatusConflict, ErrEmailAlreadyExists)
 		}
 
-		err = db.DB.Where("username = ?", user.Username).Limit(1).Find(&existUsers).Error
+		_, err = db.FindUserByUsername(user.Username)
 		if err != nil {
-			log.Println(err)
-		}
-		if len(existUsers) != 0 {
-			return fibererr.Status(c, fiber.StatusConflict, "this username is already taken")
+			if !errors.Is(err, gorm.ErrRecordNotFound) {
+				log.Println(err)
+				fibererr.Status(c, fiber.StatusInternalServerError, ErrInternalServer)
+			}
+			return fibererr.Status(c, fiber.StatusConflict, ErrUsernameAlreadyExists)
 		}
 
 		err = db.SaveUser(*user)
 		if err != nil {
 			log.Println(err)
-			return fibererr.Status(c, fiber.StatusInternalServerError, "")
+			return fibererr.Status(c, fiber.StatusInternalServerError, ErrInternalServer)
 		}
-		
+
 		tokenString, err := jwtToken.Create(user.Username, user.ID)
 		if err != nil {
 			log.Println(err)
-			fibererr.Status(c, fiber.StatusInternalServerError, "something went wrong. try again.")
+			fibererr.Status(c, fiber.StatusInternalServerError, ErrInternalServer)
 		}
 		c.Cookie(&fiber.Cookie{
 			Name:   "token",

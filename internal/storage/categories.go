@@ -1,8 +1,6 @@
 package storage
 
 import (
-	"fmt"
-
 	"github.com/Jofich/Blog-website/internal/models"
 )
 
@@ -17,7 +15,6 @@ func (db Storage) LoadCategories() error {
 	}
 	for _, category := range cat {
 		Categories[category.Name] = category.ID
-		fmt.Println(category.Name, category.ID)
 	}
 
 	return nil

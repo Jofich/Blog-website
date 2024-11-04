@@ -42,12 +42,6 @@ func Login(db storage.Storage) func(c *fiber.Ctx) error {
 			log.Println(err)
 			return fibererr.Status(c, fiber.StatusBadRequest, err.Error())
 		}
-
-		err = validator.IsValidUserDataLogin(*user)
-		if err != nil {
-			log.Println(err)
-			return fibererr.Status(c, fiber.StatusBadRequest, err.Error())
-		}
 		// user can login by username or email
 		// login/email
 		// password
@@ -55,18 +49,25 @@ func Login(db storage.Storage) func(c *fiber.Ctx) error {
 			user.Email = user.Username
 			user.Username = ""
 		}
+
+		err = validator.IsValidUserDataLogin(*user)
+		if err != nil {
+			log.Println(err)
+			return fibererr.Status(c, fiber.StatusBadRequest, err.Error())
+		}
+
 		password := user.Password
 		err = db.UserExist(user)
 		if err != nil {
 			log.Println(err)
 			if err == storage.ErrRecordNotFound {
-				return fibererr.Status(c, fiber.StatusBadRequest, "user not found")
+				return fibererr.Status(c, fiber.StatusBadRequest, ErrUserNotFound)
 			}
-			return fibererr.Status(c, fiber.StatusInternalServerError, "something get wrong, please try again")
+			return fibererr.Status(c, fiber.StatusInternalServerError, ErrInternalServer)
 
 		}
 		if !hash.CompareHashPassword(user.Password, password) {
-			return fibererr.Status(c, fiber.StatusBadRequest, "Please verify your password and account name and try again.")
+			return fibererr.Status(c, fiber.StatusBadRequest, ErrAuthentication)
 		}
 
 		tokenString, err := jwtToken.Create(user.Username, user.ID)
