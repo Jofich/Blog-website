@@ -1,9 +1,10 @@
 package storage
 
 import (
+	"errors"
 	"fmt"
 
-	hash "github.com/Jofich/Blog-website/internal/lib/hashPassword"
+	hash "github.com/Jofich/Blog-website/internal/lib/web/hashPassword"
 	"github.com/Jofich/Blog-website/internal/models"
 	"gorm.io/gorm"
 )
@@ -13,7 +14,11 @@ var (
 )
 
 type Storage struct {
-	DB *gorm.DB
+	db *gorm.DB
+}
+
+func Init(stor *gorm.DB) Storage {
+	return Storage{db: stor}
 }
 
 func (s *Storage) SaveUser(u models.User) error {
@@ -23,7 +28,7 @@ func (s *Storage) SaveUser(u models.User) error {
 	if err != nil {
 		return err
 	}
-	err = s.DB.Create(&user).Error
+	err = s.db.Create(&user).Error
 	if err != nil {
 		return err
 	}
@@ -31,21 +36,27 @@ func (s *Storage) SaveUser(u models.User) error {
 }
 
 func (s *Storage) FindUserByUsername(username string) (*models.User, error) {
-	user := new(models.User)
-	err := s.DB.Table(UserTable).Where("username = ?", username).Limit(1).Find(user).Error
+	var users []models.User
+	err := s.db.Table(UserTable).Where("username = ?", username).Limit(1).Find(&users).Error
 	if err != nil {
 		return &models.User{}, err
 	}
-	return user, nil
+	if len(users) == 0 {
+		return &models.User{}, ErrRecordNotFound
+	}
+	return &users[0], nil
 }
 
 func (s *Storage) FindUserByEmail(email string) (*models.User, error) {
-	user := new(models.User)
-	err := s.DB.Table(UserTable).Where("email = ?", email).Limit(1).Find(user).Error
+	var users []models.User
+	err := s.db.Table(UserTable).Where("email = ?", email).Limit(1).Find(&users).Error
 	if err != nil {
 		return &models.User{}, err
 	}
-	return user, nil
+	if len(users) == 0 {
+		return &models.User{}, ErrRecordNotFound
+	}
+	return &users[0], nil
 }
 
 func (s *Storage) UserExist(u *models.User) error {
@@ -60,16 +71,31 @@ func (s *Storage) UserExist(u *models.User) error {
 		return err
 	}
 	*u = *user
-	fmt.Println(*u)
-
 	return nil
 }
 
 func (s *Storage) SaveArtical(article models.Article) error {
 
-	err := s.DB.Table(ArticalTable).Create(&article).Error
+	err := s.db.Table(ArticalTable).Create(&article).Error
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+// 0 or -1 will get all user Articles
+func (s *Storage) GetUserArticles(user *models.User, limit int) error {
+	var Articles []models.Article
+	if limit < -1 {
+		return errors.New("limit cant be less than -1")
+	}
+	if limit == 0 {
+		limit = -1
+	}
+	err := s.db.Table(ArticalTable).Where("author_id = ?", user.ID).Limit(limit).Find(&Articles).Error
+	if err != nil {
+		return err
+	}
+	fmt.Println(Articles)
 	return nil
 }

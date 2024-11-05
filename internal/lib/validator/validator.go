@@ -67,7 +67,7 @@ func isPasswordValid(password string) error {
 	if len(password) < MinPasswordLen {
 		return ErrPasswordTooShort
 	}
-	re := regexp.MustCompile(`^[[\w\S]+$`)
+	re := regexp.MustCompile(`^[\w\S]+$`)
 	if !re.MatchString(password) {
 		return ErrPasswordInvalid
 	}

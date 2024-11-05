@@ -22,7 +22,7 @@ func Valid(token string) (models.User, error) {
 		return models.User{}, err
 	}
 	if claims, ok := tokenParsed.Claims.(*models.Claims); ok && tokenParsed.Valid {
-		return models.User{ID: claims.ID, Username: claims.Username}, nil
+		return claims.ToUser(), nil
 	} else {
 		return models.User{}, ErrInvalidToken
 	}

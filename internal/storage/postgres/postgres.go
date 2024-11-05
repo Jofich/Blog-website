@@ -24,7 +24,7 @@ func InitStorage(cfg config.DBCfg) storage.Storage {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	stor := storage.Storage{DB: db}
+	stor := storage.Init(db)
 
 	stor.LoadCategories()
 	return stor

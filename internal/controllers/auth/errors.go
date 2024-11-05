@@ -7,5 +7,4 @@ var (
 	ErrAuthentication = "please verify your password and username and try again"
 	ErrUserNotFound = "user not found"
 	ErrDataIncorrect = "data are incorrect"
-	
 )

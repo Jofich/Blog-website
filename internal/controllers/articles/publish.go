@@ -3,9 +3,9 @@ package articles
 import (
 	"log"
 
-	"github.com/Jofich/Blog-website/internal/lib/cookies/auth"
-	fibererr "github.com/Jofich/Blog-website/internal/lib/fiberErr"
-	"github.com/Jofich/Blog-website/internal/lib/publish"
+	"github.com/Jofich/Blog-website/internal/lib/web/cookies/auth"
+	fibererr "github.com/Jofich/Blog-website/internal/lib/web/fiberErr"
+	"github.com/Jofich/Blog-website/internal/lib/web/publish"
 	"github.com/Jofich/Blog-website/internal/models"
 	"github.com/Jofich/Blog-website/internal/storage"
 	"github.com/gofiber/fiber/v2"
@@ -24,7 +24,7 @@ func Publish(db storage.Storage) func(c *fiber.Ctx) error {
 		err = c.BodyParser(article)
 		if err != nil {
 			log.Println(err)
-			return fibererr.Status(c, fiber.StatusBadRequest, "")
+			return fibererr.Status(c, fiber.StatusBadRequest)
 		}
 		err = publish.IsCategoryExists(&article.Categories)
 		if err != nil {

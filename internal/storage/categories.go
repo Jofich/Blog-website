@@ -9,7 +9,7 @@ var Categories map[string]uint
 func (db Storage) LoadCategories() error {
 	Categories := make(map[string]uint)
 	var cat []models.Category
-	result := db.DB.Table(CategoryTable).Find(&cat)
+	result := db.db.Table(CategoryTable).Find(&cat)
 	if result.Error != nil {
 		return result.Error
 	}

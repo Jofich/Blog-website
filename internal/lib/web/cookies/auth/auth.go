@@ -1,20 +1,21 @@
 package auth
 
 import (
-	jwtToken "github.com/Jofich/Blog-website/internal/lib/cookies/jwt"
+	"github.com/Jofich/Blog-website/internal/lib/web/cookies"
+	jwtToken "github.com/Jofich/Blog-website/internal/lib/web/cookies/jwt"
 	"github.com/Jofich/Blog-website/internal/models"
 	"github.com/gofiber/fiber/v2"
 )
 
 func Logout(c *fiber.Ctx) {
 	c.Cookie(&fiber.Cookie{
-		Name:   "token",
+		Name:   cookies.JwtName,
 		MaxAge: -1,
 	})
 }
 
 func ValidateJWT(c *fiber.Ctx) (models.User, error) {
-	token := c.Cookies("token", "")
+	token := c.Cookies(cookies.JwtName)
 	if token == "" {
 		return models.User{}, jwtToken.ErrTokenEmpty
 	}

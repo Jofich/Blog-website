@@ -5,14 +5,15 @@ import (
 	"log"
 	"time"
 
-	"github.com/Jofich/Blog-website/internal/lib/cookies/auth"
-	jwtToken "github.com/Jofich/Blog-website/internal/lib/cookies/jwt"
-	fibererr "github.com/Jofich/Blog-website/internal/lib/fiberErr"
+	"github.com/Jofich/Blog-website/internal/controllers"
 	"github.com/Jofich/Blog-website/internal/lib/validator"
+	"github.com/Jofich/Blog-website/internal/lib/web/cookies"
+	"github.com/Jofich/Blog-website/internal/lib/web/cookies/auth"
+	jwtToken "github.com/Jofich/Blog-website/internal/lib/web/cookies/jwt"
+	fibererr "github.com/Jofich/Blog-website/internal/lib/web/fiberErr"
 	"github.com/Jofich/Blog-website/internal/models"
 	"github.com/Jofich/Blog-website/internal/storage"
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/gorm"
 )
 
 func SignupGet(db storage.Storage) func(c *fiber.Ctx) error {
@@ -20,9 +21,11 @@ func SignupGet(db storage.Storage) func(c *fiber.Ctx) error {
 
 		_, err := auth.ValidateJWT(c)
 		if err != nil {
-			log.Println(err)
+			if !errors.Is(err, jwtToken.ErrTokenEmpty) {
+				log.Println(err)
+			}
 		} else {
-			return c.Redirect("/feed", fiber.StatusMovedPermanently)
+			return c.Redirect(controllers.PathFeed, fiber.StatusMovedPermanently)
 		}
 		err = c.SendFile("./web/view/signup/index.html")
 		if err != nil {
@@ -47,19 +50,21 @@ func Signup(db storage.Storage) func(c *fiber.Ctx) error {
 
 		_, err = db.FindUserByEmail(user.Email)
 		if err != nil {
-			if !errors.Is(err, gorm.ErrRecordNotFound) {
+			if !errors.Is(err, storage.ErrRecordNotFound) {
 				log.Println(err)
 				fibererr.Status(c, fiber.StatusInternalServerError, ErrInternalServer)
 			}
+		} else {
 			fibererr.Status(c, fiber.StatusConflict, ErrEmailAlreadyExists)
 		}
 
 		_, err = db.FindUserByUsername(user.Username)
 		if err != nil {
-			if !errors.Is(err, gorm.ErrRecordNotFound) {
+			if !errors.Is(err, storage.ErrRecordNotFound) {
 				log.Println(err)
 				fibererr.Status(c, fiber.StatusInternalServerError, ErrInternalServer)
 			}
+		} else {
 			return fibererr.Status(c, fiber.StatusConflict, ErrUsernameAlreadyExists)
 		}
 
@@ -69,20 +74,20 @@ func Signup(db storage.Storage) func(c *fiber.Ctx) error {
 			return fibererr.Status(c, fiber.StatusInternalServerError, ErrInternalServer)
 		}
 
-		tokenString, err := jwtToken.Create(user.Username, user.ID)
+		tokenString, err := jwtToken.Create(*user)
 		if err != nil {
 			log.Println(err)
 			fibererr.Status(c, fiber.StatusInternalServerError, ErrInternalServer)
 		}
 		c.Cookie(&fiber.Cookie{
-			Name:   "token",
+			Name:   cookies.JwtName,
 			Value:  tokenString,
 			MaxAge: int(time.Hour.Seconds()) * 10,
 		})
 
 		//public/js/signup/script.js check if responce code is 301 and redirect user to "location"
 		return c.Status(fiber.StatusMovedPermanently).JSON(fiber.Map{
-			"redirect_url": "/feed",
+			"redirect_url": controllers.PathFeed,
 			"status":       "success",
 			"user": fiber.Map{
 				"id":         user.ID,
