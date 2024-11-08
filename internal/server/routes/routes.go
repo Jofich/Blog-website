@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/Jofich/Blog-website/internal/controllers"
+	"github.com/Jofich/Blog-website/internal/controllers/admin"
 	"github.com/Jofich/Blog-website/internal/controllers/articles"
 	"github.com/Jofich/Blog-website/internal/controllers/auth"
 	"github.com/Jofich/Blog-website/internal/storage"
@@ -18,5 +19,6 @@ func AuthRoutes(app *fiber.App, db storage.Storage) {
 	app.Get("/logout", auth.Logout())
 	app.Get("/signup", auth.SignupGet(db))
 	app.Get("/login", auth.LoginGet(db))
+	app.Post("/admin/AddCategory", admin.AddCategory(db))
 
 }
