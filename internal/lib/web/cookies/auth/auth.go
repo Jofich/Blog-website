@@ -7,13 +7,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func Logout(c *fiber.Ctx) {
-	c.Cookie(&fiber.Cookie{
-		Name:   cookies.JwtName,
-		MaxAge: -1,
-	})
-}
-
 func ValidateJWT(c *fiber.Ctx) (models.User, error) {
 	token := c.Cookies(cookies.JwtName)
 	if token == "" {
@@ -21,7 +14,7 @@ func ValidateJWT(c *fiber.Ctx) (models.User, error) {
 	}
 	user, err := jwtToken.Valid(token)
 	if err != nil {
-		Logout(c)
+		cookies.Delete(c, cookies.JwtName)
 		return models.User{}, err
 	}
 

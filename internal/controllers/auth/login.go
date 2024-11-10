@@ -74,16 +74,15 @@ func Login(db storage.Storage) func(c *fiber.Ctx) error {
 		if !hash.CompareHashPassword(user.Password, password) {
 			return fibererr.Status(c, fiber.StatusBadRequest, ErrAuthentication)
 		}
-		db.GetUserArticles(user, -1)
 		tokenString, err := jwtToken.Create(*user)
 		if err != nil {
 			log.Println(err)
 			return fibererr.Status(c, fiber.StatusInternalServerError)
 		}
 		c.Cookie(&fiber.Cookie{
-			Name:   cookies.JwtName,
-			Value:  tokenString,
-			MaxAge: int(time.Hour.Seconds()) * 10,
+			Name:    cookies.JwtName,
+			Value:   tokenString,
+			Expires: time.Now().Add(time.Hour * 10),
 		})
 
 		return c.Status(fiber.StatusMovedPermanently).JSON(fiber.Map{

@@ -2,7 +2,6 @@ package admin
 
 import (
 	"errors"
-	"fmt"
 	"log"
 
 	"github.com/Jofich/Blog-website/internal/lib/web/cookies/auth"
@@ -25,7 +24,7 @@ func AddCategory(db storage.Storage) func(c *fiber.Ctx) error {
 				return fibererr.Status(c, fiber.StatusBadRequest, "something get wrong,try again")
 			}
 		}
-		if user.Role == models.RoleAdmin || user.Role == models.RoleSuperAdmin {
+		if user.Role != models.RoleAdmin && user.Role != models.RoleSuperAdmin {
 			return fibererr.Status(c, fiber.StatusMethodNotAllowed, "you are not authorized to execute this command")
 		}
 
@@ -34,7 +33,7 @@ func AddCategory(db storage.Storage) func(c *fiber.Ctx) error {
 		if err != nil {
 			return fibererr.Status(c, fiber.StatusBadRequest, "can not parse request")
 		}
-		fmt.Println(category)
+
 		err = db.SaveCategory(*category)
 		if err != nil {
 			log.Println(err)

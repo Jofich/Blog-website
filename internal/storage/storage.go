@@ -2,7 +2,6 @@ package storage
 
 import (
 	"errors"
-	"fmt"
 
 	hash "github.com/Jofich/Blog-website/internal/lib/web/hashPassword"
 	"github.com/Jofich/Blog-website/internal/models"
@@ -96,6 +95,5 @@ func (s *Storage) GetUserArticles(user *models.User, limit int) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(Articles)
 	return nil
 }
